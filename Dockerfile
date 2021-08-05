@@ -1,10 +1,17 @@
 FROM alpine:3.10
 
+ARG PUID=211
+ARG PGID=211
+
 # Install OpenSSH server and Gitolite
 # Unlock the automatically-created git user
 RUN set -x \
- && apk add --no-cache gitolite openssh \
- && passwd -u git
+    && apk add --no-cache gitolite openssh \
+    && deluser git \
+    && addgroup -g ${PGID} -S git \
+    && adduser -u ${PUID} -S -D -H -h /var/lib/git -s /bin/sh -G git -g git git \
+    && chown git:git /var/lib/git \
+    && passwd -u git
 
 # Volume used to store SSH host keys, generated on first run
 VOLUME /etc/ssh/keys
